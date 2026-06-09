@@ -25,8 +25,7 @@ pipeline {
         stage('Static Code Analysis') {
             steps {
                 withSonarQubeEnv('SonarQubeServer') {
-                    // Added explicit login parameter here
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.login=$SONAR_AUTH_TOKEN'
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.token=$SONAR_AUTH_TOKEN'
                 }
             }
         }
@@ -35,7 +34,7 @@ pipeline {
             steps {
                 sshagent(['ansible-ssh-key-credential']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@<ANSIBLE_SERVER_PRIVATE_IP> \
+                        ssh -o StrictHostKeyChecking=no ubuntu@172.31.8.31 \
                         "ansible-playbook -i /home/ubuntu/ansible/hosts /home/ubuntu/ansible/deploy.yml"
                     '''
                 }
@@ -43,4 +42,3 @@ pipeline {
         }
     }
 }
-
