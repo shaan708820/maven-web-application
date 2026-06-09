@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven3'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Static Code Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQubeServer') {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=maven-web-application -Dsonar.login=squ_827afd3b56f5a48c397bb13ab130484d839f2669'
+                }
+            }
+        }
+
+        stage('Deployment Automation') {
+            steps {
+                sshagent(['ansible-ssh-key-credential']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@172.31.8.31 \
+                        "ansible-playbook -i /home/ubuntu/ansible/hosts /home/ubuntu/ansible/deploy.yml"
+                    '''
+                }
+            }
+        }
+    }
+}
+
