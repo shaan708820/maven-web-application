@@ -5,6 +5,10 @@ pipeline {
         maven 'Maven3'
     }
 
+    environment {
+        SONAR_PROJECT_KEY = 'maven-web-application'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -15,6 +19,25 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Static Code Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQubeServer') {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY}'
+                }
+            }
+        }
+
+        stage('Deployment Automation') {
+            steps {
+                sshagent(['ansible-ssh-key-credential']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@<ANSIBLE_SERVER_PRIVATE_IP> \
+                        "ansible-playbook -i /home/ubuntu/ansible/hosts /home/ubuntu/ansible/deploy.yml"
+                    '''
+                }
             }
         }
     }
