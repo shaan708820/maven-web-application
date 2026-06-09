@@ -18,11 +18,20 @@ pipeline {
             }
         }
 
+        stage('Static Code Analysis') {
+            steps {
+                // This now securely uses the 'sonar-token' credential you linked in Jenkins
+                withSonarQubeEnv('SonarQubeServer') {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=maven-web-application'
+                }
+            }
+        }
+
         stage('Deploy to Tomcat') {
             steps {
-                // Now using the dedicated Tomcat key
+                // This strictly uses your new Ubuntu key to securely copy the file
                 sshagent(['tomcat-key']) {
-                    sh 'scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@16.16.216.211:/opt/apache-tomcat-9.0.50/webapps/'    
+                    sh 'scp -o StrictHostKeyChecking=no target/maven-web-application.war ubuntu@51.20.105.18:/opt/tomcat/webapps/'    
                 }
             }
         }
