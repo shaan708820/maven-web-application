@@ -1,9 +1,20 @@
 pipeline {
     agent any
+
+    tools {
+        maven 'maven3.8.2'
+    }
+
     stages {
-        stage('Test') {
+        stage('Checkout') {
             steps {
-                echo "Pipeline syntax is working!"
+                checkout scm
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh "mvn clean package -DskipTests"
             }
         }
     }
