@@ -21,7 +21,7 @@ pipeline {
         stage('Static Code Analysis') {
             steps {
                 withSonarQubeEnv('SonarQubeServer') {
-                    // Changed from sonar.token to sonar.login
+                    // This specific line has been updated to use sonar.login
                     sh 'mvn sonar:sonar -Dsonar.projectKey=maven-web-application -Dsonar.login=squ_827afd3b56f5a48c397bb13ab130484d839f2669'
                 }
             }
@@ -39,3 +39,4 @@ pipeline {
         }
     }
 }
+
