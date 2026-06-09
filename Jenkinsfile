@@ -18,24 +18,12 @@ pipeline {
             }
         }
 
-        stage('Static Code Analysis') {
+        stage('Deploy to Tomcat') {
             steps {
-                withSonarQubeEnv('SonarQubeServer') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=maven-web-application -Dsonar.login=squ_827afd3b56f5a48c397bb13ab130484d839f2669'
-                }
-            }
-        }
-
-        stage('Deployment Automation') {
-            steps {
-                sshagent(['ansible-ssh-key-credential']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@172.31.8.31 \
-                        "ansible-playbook -i /home/ubuntu/ansible/hosts /home/ubuntu/ansible/deploy.yml"
-                    '''
+                sshagent(['bfe1b3c1-c29b-4a4d-b97a-c068b7748cd0']) {
+                    sh 'scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@16.16.216.211:/opt/apache-tomcat-9.0.50/webapps/'    
                 }
             }
         }
     }
 }
-
